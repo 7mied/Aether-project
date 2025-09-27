@@ -2,8 +2,6 @@
 const express = require('express');
 require('dotenv').config();
 
-// --- Our Debug Line ---
-
 const cors = require('cors');
 const { initializeDatabase } = require('./db');
 
