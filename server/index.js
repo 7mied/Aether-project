@@ -21,6 +21,20 @@ initializeDatabase();
 app.use('/api/users', require('./routes/users'));
 
 // --- Start Server ---
-app.listen(PORT, 'localhost', () => {
-  console.log(`🚀 Server is running on localhost:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server is running on 0.0.0.0:${PORT}`);
+});
+
+// Handle errors
+server.on('error', (err) => {
+  console.error('❌ Server error:', err);
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
