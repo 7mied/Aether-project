@@ -1,38 +1,43 @@
 // server/index.js
-const express = require('express');
-require('dotenv').config();
+// Final Version as of September 27, 2025
 
-const cors = require('cors');
-const { initializeDatabase } = require('./db');
+// --- Imports ---
+const express = require("express");
+require("dotenv").config(); // Loads secrets from the "Secrets" tab
+const mongoose = require("mongoose");
+const cors = require("cors");
 
+// --- App Initialization ---
 const app = express();
+// Replit provides its own PORT, or we default to 3000
 const PORT = process.env.PORT || 3000;
 
-// --- Middleware ---
-app.use(cors()); 
-app.use(express.json());
+// --- CORS Configuration ---
+// This is the crucial fix to allow your frontend to talk to your backend
+const corsOptions = {
+  // IMPORTANT: Replace this with your actual frontend URL if it changes!
+  origin:
+    "https://53a2c646-ccb8-4cac-9512-92b0b502ab90-00-j6zno0joclky.worf.replit.dev:5173",
+};
 
-// --- Initialize Database ---
-initializeDatabase();
+// --- Middleware ---
+app.use(cors(corsOptions)); // Enable CORS with our specific options
+app.use(express.json()); // Allow the server to accept and parse JSON data
+
+// --- Database Connection ---
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Successfully connected to MongoDB Atlas!"))
+  .catch((err) => {
+    console.error("❌ Error connecting to MongoDB Atlas:", err);
+    process.exit(1); // Exit if we can't connect to the database
+  });
 
 // --- API Routes ---
-app.use('/api/users', require('./routes/users'));
+// Any request to /api/users will be handled by the users.js file
+app.use("/api/users", require("./routes/users"));
 
-// --- Start Server ---
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Server is running on 0.0.0.0:${PORT}`);
-});
-
-// Handle errors
-server.on('error', (err) => {
-  console.error('❌ Server error:', err);
-});
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception:', err);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
-});
+// --- Start The Server ---
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
+}); // server/index.js

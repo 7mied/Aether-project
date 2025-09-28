@@ -1,18 +1,17 @@
-// client/src/pages/RegisterPage.jsx
+// client/src/pages/LoginPage.jsx
 
 import React, { useState } from "react";
 import axios from "axios";
 
-const RegisterPage = () => {
-  // useState hook to manage our form's data
+const LoginPage = () => {
+  // useState hook to manage our form's data for email and password
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
   });
 
   // Destructure for easier access
-  const { name, email, password } = formData;
+  const { email, password } = formData;
 
   // This function updates the state whenever a user types in an input field
   const onChange = (e) =>
@@ -22,59 +21,42 @@ const RegisterPage = () => {
   const onSubmit = async (e) => {
     e.preventDefault(); // Prevents the page from reloading on submit
 
-    const newUser = {
-      name,
+    const user = {
       email,
       password,
     };
 
     try {
-      // We need to configure the backend URL. For now, we'll hardcode it.
-      // NOTE: Replace this with your actual Codespace forwarded URL for port 5000
+      // Use the same backendUrl as before. Replit keeps it consistent.
+      // You can also move this to a central config file later.
       const backendUrl = "https://aether-backend-3cnh.onrender.com";
 
-      const res = await axios.post(
-        `${backendUrl}/api/users/register`,
-        newUser,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+      const res = await axios.post(`${backendUrl}/api/users/login`, user, {
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+      });
 
-      console.log("Success:", res.data);
-      alert("Registration successful!");
+      // On success, the server sends back a token. Let's see it!
+      console.log("Login Success! Token:", res.data.token);
+      alert("Login successful!");
+
+      // In a real app, we would save this token (e.g., in localStorage)
+      // and redirect the user to their dashboard. We'll do that next.
     } catch (err) {
-      console.error("Error:", err.response.data);
+      // If the credentials are wrong, the server sends a 400 error
+      console.error("Login Error:", err.response.data);
       alert("Error: " + err.response.data.msg);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center text-white">
-      <h1 className="text-5xl font-bold mb-8">Create Your Aether Account</h1>
+      <h1 className="text-5xl font-bold mb-8">Sign In to Aether</h1>
       <form
         className="w-full max-w-md bg-gray-800 p-8 rounded-lg"
         onSubmit={onSubmit}
       >
-        <div className="mb-4">
-          <label
-            className="block text-gray-300 text-sm font-bold mb-2"
-            htmlFor="name"
-          >
-            Name
-          </label>
-          <input
-            className="w-full bg-gray-700 text-white rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
-            type="text"
-            placeholder="Name"
-            name="name"
-            value={name}
-            onChange={onChange}
-            required
-          />
-        </div>
         <div className="mb-4">
           <label
             className="block text-gray-300 text-sm font-bold mb-2"
@@ -106,7 +88,6 @@ const RegisterPage = () => {
             name="password"
             value={password}
             onChange={onChange}
-            minLength="6"
             required
           />
         </div>
@@ -115,7 +96,7 @@ const RegisterPage = () => {
             className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
             type="submit"
           >
-            Register
+            Sign In
           </button>
         </div>
       </form>
@@ -123,4 +104,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default LoginPage;
