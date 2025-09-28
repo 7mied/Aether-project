@@ -16,8 +16,7 @@ const PORT = process.env.PORT || 3000;
 // This is the crucial fix to allow your frontend to talk to your backend
 const corsOptions = {
   // IMPORTANT: Replace this with your actual frontend URL if it changes!
-  origin:
-    "https://53a2c646-ccb8-4cac-9512-92b0b502ab90-00-j6zno0joclky.worf.replit.dev:5173",
+  origin: "https://aether-frontend.onrender.com",
 };
 
 // --- Middleware ---
