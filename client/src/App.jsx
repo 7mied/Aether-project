@@ -2,11 +2,11 @@ import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 // Import components
-// Assuming Navbar exists based on previous steps, if not, you can remove it.
 import Navbar from "./components/Navbar";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
+import ProjectDetailsPage from "./pages/ProjectDetailsPage"; // <--- NEW IMPORT
 
 // Simple Homepage Component
 const HomePage = () => (
@@ -18,15 +18,17 @@ const HomePage = () => (
 
 function App() {
   return (
-    // The Router component MUST wrap everything that uses 'useNavigate' or 'Link'
     <Router>
       <Navbar />
       <Routes>
-        {/* Note the use of <Element /> syntax - crucial for avoiding object errors */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+
+        {/* The Project Details Route */}
+        {/* The :id part acts as a variable that we can read in the page */}
+        <Route path="/project/:id" element={<ProjectDetailsPage />} />
       </Routes>
     </Router>
   );

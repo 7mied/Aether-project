@@ -45,4 +45,30 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+// @route   GET api/projects/:id
+// @desc    Get project by ID
+// @access  Private
+router.get("/:id", auth, async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+
+    if (!project) {
+      return res.status(404).json({ msg: "Project not found" });
+    }
+
+    // Ensure the user owns this project
+    if (project.manager.toString() !== req.user.id) {
+      return res.status(401).json({ msg: "Not authorized" });
+    }
+
+    res.json(project);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === "ObjectId") {
+      return res.status(404).json({ msg: "Project not found" });
+    }
+    res.status(500).send("Server Error");
+  }
+});
+
 module.exports = router;
