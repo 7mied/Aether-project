@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { Link } from "react-router-dom";
 
 const DashboardPage = () => {
   const [projects, setProjects] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [aiLoading, setAiLoading] = useState(false); // State for AI loading
 
   const [formData, setFormData] = useState({
     name: "",
@@ -15,10 +17,10 @@ const DashboardPage = () => {
     endDate: "",
   });
 
-  // Ensure these match your actual deployment URLs
   const backendUrl = "https://aether-backend-3cnh.onrender.com";
   const token = localStorage.getItem("token");
 
+  // Fetch projects on load
   useEffect(() => {
     const fetchProjects = async () => {
       if (!token) return;
@@ -38,6 +40,34 @@ const DashboardPage = () => {
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  // --- AI FUNCTION: Call the Gemini API ---
+  const handleGenerateAI = async () => {
+    if (!formData.name) {
+      alert("Please enter a project name first!");
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      // Call our backend AI route
+      const res = await axios.post(
+        `${backendUrl}/api/ai/generate-charter`,
+        { name: formData.name, type: formData.type },
+        { headers: { "x-auth-token": token } },
+      );
+
+      // Update the description field with the AI's text
+      setFormData((prev) => ({ ...prev, description: res.data.generatedText }));
+    } catch (err) {
+      console.error("AI Error:", err);
+      alert(
+        "Failed to generate AI content. Make sure your API key is set in Render.",
+      );
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -102,8 +132,14 @@ const DashboardPage = () => {
               projects.map((project) => (
                 <div
                   key={project._id}
-                  className="group bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-cyan-500 transition-all duration-300 shadow-xl"
+                  className="group bg-gray-800 p-6 rounded-2xl border border-gray-700 hover:border-cyan-500 transition-all duration-300 shadow-xl relative"
                 >
+                  {/* Link to Project Details Page */}
+                  <Link
+                    to={`/project/${project._id}`}
+                    className="absolute inset-0 z-10"
+                  ></Link>
+
                   <div className="flex justify-between items-center mb-6">
                     <span className="text-[10px] font-black uppercase tracking-widest text-cyan-400 bg-cyan-400/10 px-3 py-1 rounded-full">
                       {project.type}
@@ -151,7 +187,7 @@ const DashboardPage = () => {
         )}
       </div>
 
-      {/* Modern Modal */}
+      {/* Create Project Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-md">
           <div className="bg-gray-800 w-full max-w-xl rounded-3xl p-10 border border-gray-700 shadow-2xl">
@@ -175,19 +211,33 @@ const DashboardPage = () => {
                   required
                 />
               </div>
+
+              {/* Description with AI Button */}
               <div>
-                <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
-                  Strategic Description
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-xs font-bold text-gray-500 uppercase">
+                    Strategic Description
+                  </label>
+                  {/* The AI Button */}
+                  <button
+                    type="button"
+                    onClick={handleGenerateAI}
+                    disabled={aiLoading}
+                    className="text-xs flex items-center gap-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-3 py-1 rounded-full font-bold transition-all disabled:opacity-50 text-white"
+                  >
+                    {aiLoading ? "Generating..." : "Auto-Draft with AI ✨"}
+                  </button>
+                </div>
                 <textarea
                   name="description"
-                  placeholder="Describe the goal and constraints..."
+                  placeholder="Describe the goal... or type the name above and let AI draft this for you!"
                   value={formData.description}
                   onChange={onChange}
-                  className="w-full bg-gray-900/50 p-4 rounded-xl border border-gray-700 focus:ring-2 focus:ring-cyan-500 outline-none h-32 resize-none"
+                  className="w-full bg-gray-900/50 p-4 rounded-xl border border-gray-700 focus:ring-2 focus:ring-cyan-500 outline-none h-32 resize-none font-mono text-sm"
                   required
                 />
               </div>
+
               <div className="grid grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase mb-2">
