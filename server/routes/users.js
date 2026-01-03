@@ -1,74 +1,67 @@
-// server/routes/users.js
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken"); // Added missing import
 const User = require("../models/User");
 
-// Register a new user
+// @route   POST api/users/register
 router.post("/register", async (req, res) => {
+  console.log("👉 Registration attempt started for:", req.body.email); // Log 1
+
   const { name, email, password } = req.body;
+
   try {
-    let existingUser = await User.findOne({ email });
-    if (existingUser) {
+    // Check if user exists
+    let user = await User.findOne({ email });
+    if (user) {
+      console.log("⚠️ User already exists"); // Log 2
       return res.status(400).json({ msg: "User already exists" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    user = new User({ name, email, password });
 
-    const user = await User.create({ name, email, password: hashedPassword });
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    // Save user
+    await user.save();
+    console.log("✅ User saved to database!"); // Log 3
+
     res.status(201).json({ msg: "User registered successfully!" });
   } catch (err) {
-    console.error(err.message);
+    console.error("❌ REGISTRATION ERROR:", err.message); // Critical Log
+    console.error(err); // Full error object
     res.status(500).send("Server Error");
   }
 });
-// server/routes/users.js
-
-// ... (your existing '/register' route is above this) ...
 
 // @route   POST api/users/login
-// @desc    Authenticate user & get token
-// @access  Public
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // 1. Check if the user exists
     let user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
-    }
+    if (!user) return res.status(400).json({ msg: "Invalid Credentials" });
 
-    // 2. Compare the submitted password with the hashed password in the database
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ msg: "Invalid Credentials" });
-    }
+    if (!isMatch) return res.status(400).json({ msg: "Invalid Credentials" });
 
-    // 3. If credentials are correct, create and return a JSON Web Token (JWT)
-    const payload = {
-      user: {
-        id: user.id,
-      },
-    };
+    const payload = { user: { id: user.id } };
 
-    // We need a JWT Secret stored in our Secrets tab
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
-      { expiresIn: 3600 }, // Token expires in 1 hour
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: 360000 },
       (err, token) => {
         if (err) throw err;
-        res.json({ token }); // Send the token back to the client
+        res.json({ token });
       },
     );
   } catch (err) {
-    console.error(err.message);
+    console.error("❌ LOGIN ERROR:", err.message);
     res.status(500).send("Server Error");
   }
 });
-
-// ... (module.exports = router; is below this) ...
 
 module.exports = router;
