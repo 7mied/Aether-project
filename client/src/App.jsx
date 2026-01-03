@@ -6,7 +6,7 @@ import Navbar from "./components/Navbar";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
-import ProjectDetailsPage from "./pages/ProjectDetailsPage"; // <--- NEW IMPORT
+import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 
 // Simple Homepage Component
 const HomePage = () => (
@@ -27,7 +27,6 @@ function App() {
         <Route path="/dashboard" element={<DashboardPage />} />
 
         {/* The Project Details Route */}
-        {/* The :id part acts as a variable that we can read in the page */}
         <Route path="/project/:id" element={<ProjectDetailsPage />} />
       </Routes>
     </Router>
