@@ -24,17 +24,17 @@ mongoose
 // --- API Routes ---
 app.use("/api/users", require("./routes/users"));
 app.use("/api/projects", require("./routes/projects"));
-// NEW: Register the AI routes here ✨
+// NEW: Register the AI routes
 app.use("/api/ai", require("./routes/ai"));
+// NEW: Register the Task routes ✨
+app.use("/api/tasks", require("./routes/tasks"));
 
 // --- Root Route (Health Check) ---
-// This prevents "Cannot GET /" and confirms the server is live
 app.get("/", (req, res) => {
   res.json({ message: "✅ Foreplan API is active and running!" });
 });
 
-// !!! NEW: Global Error Handling Middleware !!!
-// This MUST be the last app.use() call. It acts as a "catch-all".
+// Global Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error("--- UNHANDLED ERROR ---");
   console.error(err.stack);
