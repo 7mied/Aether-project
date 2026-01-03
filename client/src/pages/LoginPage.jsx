@@ -1,73 +1,62 @@
-// client/src/pages/LoginPage.jsx
-
 import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom"; // Import Link
 import axios from "axios";
 
 const LoginPage = () => {
-  // useState hook to manage our form's data for email and password
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  // Destructure for easier access
   const { email, password } = formData;
 
-  // This function updates the state whenever a user types in an input field
+  // Backend URL
+  const backendUrl = "https://aether-backend-3cnh.onrender.com";
+
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // This function runs when the form is submitted
   const onSubmit = async (e) => {
-    e.preventDefault(); // Prevents the page from reloading on submit
+    e.preventDefault();
 
-    const user = {
-      email,
-      password,
-    };
+    const user = { email, password };
 
     try {
-      // Use the same backendUrl as before. Replit keeps it consistent.
-      // You can also move this to a central config file later.
-      const backendUrl = "https://aether-backend-3cnh.onrender.com";
-
       const res = await axios.post(`${backendUrl}/api/users/login`, user, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
-      // On success, the server sends back a token. Let's see it!
-      console.log("Login Success! Token:", res.data.token);
-      alert("Login successful!");
+      // 1. Save token
+      localStorage.setItem("token", res.data.token);
 
-      // In a real app, we would save this token (e.g., in localStorage)
-      // and redirect the user to their dashboard. We'll do that next.
+      // 2. Navigate immediately (Removed the blocking alert)
+      console.log("Navigating to dashboard...");
+      navigate("/dashboard");
     } catch (err) {
-      // If the credentials are wrong, the server sends a 400 error
-      console.error("Login Error:", err.response.data);
-      alert("Error: " + err.response.data.msg);
+      console.error(err);
+      const msg = err.response?.data?.msg || "Login failed.";
+      alert(`Error: ${msg}`);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center text-white">
-      <h1 className="text-5xl font-bold mb-8">Sign In to Aether</h1>
+    <div className="min-h-screen bg-gray-900 flex flex-col justify-center items-center text-white p-4">
+      <h1 className="text-5xl font-bold mb-8 text-cyan-400">
+        Sign In to Foreplan
+      </h1>
       <form
-        className="w-full max-w-md bg-gray-800 p-8 rounded-lg"
+        className="w-full max-w-md bg-gray-800 p-8 rounded-xl shadow-lg"
         onSubmit={onSubmit}
       >
         <div className="mb-4">
-          <label
-            className="block text-gray-300 text-sm font-bold mb-2"
-            htmlFor="email"
-          >
+          <label className="block text-gray-300 text-sm font-bold mb-2">
             Email
           </label>
           <input
-            className="w-full bg-gray-700 text-white rounded py-2 px-3 leading-tight focus:outline-none focus:shadow-outline"
+            className="w-full bg-gray-700 text-white rounded-lg py-3 px-4 focus:ring-2 focus:ring-cyan-600 outline-none"
             type="email"
-            placeholder="Email Address"
             name="email"
             value={email}
             onChange={onChange}
@@ -75,16 +64,12 @@ const LoginPage = () => {
           />
         </div>
         <div className="mb-6">
-          <label
-            className="block text-gray-300 text-sm font-bold mb-2"
-            htmlFor="password"
-          >
+          <label className="block text-gray-300 text-sm font-bold mb-2">
             Password
           </label>
           <input
-            className="w-full bg-gray-700 text-white rounded py-2 px-3 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            className="w-full bg-gray-700 text-white rounded-lg py-3 px-4 focus:ring-2 focus:ring-cyan-600 outline-none"
             type="password"
-            placeholder="******************"
             name="password"
             value={password}
             onChange={onChange}
@@ -93,11 +78,23 @@ const LoginPage = () => {
         </div>
         <div className="flex items-center justify-between">
           <button
-            className="bg-cyan-500 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
+            className="bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3 px-4 rounded-lg w-full transition"
             type="submit"
           >
             Sign In
           </button>
+        </div>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-400">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-cyan-500 hover:text-cyan-400 font-semibold"
+            >
+              Register Now
+            </Link>
+          </p>
         </div>
       </form>
     </div>
